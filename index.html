@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电脑分区壁纸模拟器</title>
+    <style>
+        :root {
+            --bezel-color: #222;
+            --screen-width: 800px; /* 模拟屏幕宽度 */
+            --screen-height: 450px; /* 16:9 比例 */
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        /* 控制区域 */
+        .controls {
+            margin-bottom: 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .wallpaperBox{
+            border: 5px solid black;
+            width: 60%;
+            height: 85vh;
+            padding: 10px;
+        }
+        .controls1 {
+            /* 水平居中 */
+            text-align: center;
+            /* 可选：添加垂直居中（如果需要），需设置高度 */
+            /* height: 120px;
+            line-height: 120px; */
+            /* 可选：添加内边距，让内容更美观 */
+            padding: 15px 0;
+            /* 确保是块级元素，占满宽度 */
+            display: block;
+        }
+
+        /* 第一个文本样式 */
+        .controls1 span:first-child {
+            /* 宋体 */
+            font-family: "SimSun", serif;
+            /* 字体大小，可根据需求调整 */
+            font-size: 18px;
+            /* 字体加粗（更黑） */
+            font-weight: 700;
+            /* 黑色 */
+            color: #000;
+            /* 换行显示（关键：将行内元素转为块级，独占一行） */
+            display: block;
+            /* 可选：与第二个文本拉开垂直间距 */
+            margin-bottom: 2px;
+        }
+
+        /* 第二个文本样式 */
+        .controls1 span:last-child {
+            /* 宋体 */
+            font-family: "SimSun", serif;
+            /* 字体大小，比第一个小 */
+            font-size: 16px;
+            /* 常规字重 */
+            font-weight: 400;
+            /* 灰色（可根据需求调整灰度值） */
+            color: #000000;
+            /* 换行显示（关键：将行内元素转为块级，独占一行） */
+            display: block;
+        }
+
+        /* 兼容不同浏览器的宋体设置 */
+        @font-face {
+            font-family: "SimSun";
+            src: local("SimSun"), local("宋体");
+        }
+
+        .upload-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* 显示器整体结构 */
+        .monitor-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-style: preserve-3d;
+            margin-top: -10px;
+        }
+
+        /* 显示器边框 */
+        .monitor-bezel {
+            width: var(--screen-width);
+            height: var(--screen-height);
+            background-color: #000;
+            border: 12px solid var(--bezel-color);
+            border-bottom-width: 25px; /* 下巴稍微宽一点 */
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 
+                0 0 0 2px #444, /* 外轮廓高光 */
+                0 20px 50px rgba(0,0,0,0.4); /* 投影 */
+            overflow: hidden;
+        }
+
+        /* 摄像头小点 */
+        .monitor-bezel::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #555;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        /* 屏幕显示区域 */
+        .screen {
+            width: 100%;
+            height: 100%;
+            background-color: #333; /* 默认黑色背景 */
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            /* 使用 Grid 布局模拟分区 */
+            display: grid;
+            grid-template-columns: 36% 1fr; /* 左侧约占36%，根据你的图估算 */
+            grid-template-rows: 1fr 1fr;
+            padding: 10px;
+            box-sizing: border-box;
+            gap: 10px;
+        }
+
+        /* 分区布局定义 */
+        .zone {
+            /* border: 1px dashed rgba(255,255,255,0.3); 测试用边框 */
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            padding: 25px;
+            gap: 15px;
+        }
+
+        /* 左侧分区：跨两行 */
+        .zone-left {
+            grid-row: 1 / span 2;
+            grid-column: 1;
+            padding-top: 50px; /* 避开标题区域 */
+        }
+
+        /* 右上分区 */
+        .zone-right-top {
+            grid-row: 1;
+            grid-column: 3;
+            padding-top: 50px;
+            padding-left: 30px;
+        }
+
+        /* 右下分区 */
+        .zone-right-bottom {
+            grid-row: 2;
+            grid-column: 3;
+            padding-top: 50px;
+            padding-left: 30px;
+        }
+
+        /* 文件夹图标样式 */
+        .folder {
+            width: 60px;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px black;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .folder:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+
+        .folder:active {
+            transform: scale(0.95);
+        }
+
+        .folder-icon {
+            width: 35px;
+            height: 35px;
+            margin: 0 auto 5px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23FFA000' d='M40,12H22l-4-4H8c-2.2,0-4,1.8-4,4v8h40V12z'/%3E%3Cpath fill='%23FFCA28' d='M40,12H8c-2.2,0-4,1.8-4,4v20c0,2.2,1.8,4,4,4h32c2.2,0,4-1.8,4-4V16C44,13.8,42.2,12,40,12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* 显示器支架 */
+        .stand-neck {
+            width: 90px;
+            height: 60px;
+            background: linear-gradient(to right, #2a2a2a, #444, #2a2a2a);
+            margin-top: -5px; /* 连接处 */
+            z-index: -1;
+        }
+
+        .stand-base {
+            width: 240px;
+            height: 15px;
+            background: linear-gradient(to bottom, #333, #111);
+            border-radius: 20px 20px 4px 4px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* LOGO */
+        .brand-logo {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            z-index: 20;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <span style="font-weight: bold;">上传你的分区壁纸</span>
+        <label for="wallpaper-upload" class="upload-btn">选择图片文件</label>
+        <input type="file" id="wallpaper-upload" accept="image/*">
+        <!-- <p style="font-size: 12px; color: #666; margin-top: 10px;">支持 JPG, PNG 格式</p> -->
+    </div>
+    <div  class="wallpaperBox">
+    <div class="controls1">
+        <span>电脑分区壁纸-桌面效果</span>
+        <span>@Kaimana</span>
+    </div>
+    <div class="monitor-wrapper">
+        <!-- 屏幕边框 -->
+        <div class="monitor-bezel">
+            <!-- 屏幕内容 -->
+            <div class="screen" id="pc-screen">
+                
+                <!-- 左侧分区：常用文件 -->
+                <div class="zone zone-left">
+                    <div class="folder"><div class="folder-icon"></div>文件夹1</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹2</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹3</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹4</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹5</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹6</div>
+                </div>
+
+                <!-- 右上分区：正在进行 -->
+                <div class="zone zone-right-top">
+                    <div class="folder"><div class="folder-icon"></div>文件夹1</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹2</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹3</div>
+                </div>
+
+                <!-- 右下分区：其他文件 -->
+                <div class="zone zone-right-bottom">
+                    <div class="folder"><div class="folder-icon"></div>文件夹1</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹2</div>
+                    <div class="folder"><div class="folder-icon"></div>文件夹3</div>
+                </div>
+
+            </div>
+            <!-- 品牌LOGO模拟 -->
+            <div class="brand-logo">MONITOR</div>
+        </div>
+        
+        <!-- 支架 -->
+        <div class="stand-neck"></div>
+        <div class="stand-base"></div>
+    </div>
+    </div>
+    <script>
+        const uploadInput = document.getElementById('wallpaper-upload');
+        const screenDiv = document.getElementById('pc-screen');
+
+        uploadInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    screenDiv.style.backgroundImage = `url(${e.target.result})`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
